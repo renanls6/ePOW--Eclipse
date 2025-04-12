@@ -28,6 +28,7 @@ screen -S bitz
 ```bash
 cargo install bitz
 ```
+![install](https://github.com/user-attachments/assets/62c92383-106e-4b75-b13c-3b50d4c7c487)
 
 
 # 6. Using Bitz
