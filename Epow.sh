@@ -31,69 +31,61 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
-# Install necessary packages
-install_dependencies() {
-    echo -e "${YELLOW}Installing necessary packages...${NC}"
-    apt -qy install curl git jq lz4 build-essential screen -y
-    echo -e "${GREEN}Dependencies installed!${NC}"
-}
-
 # Load Rust if already installed
 source $HOME/.cargo/env 2>/dev/null
 
-# Full automatic installation
-install_eclipse_node() {
+# Install Bitz CLI + dependencies + wallet + screen session
+install_bitz_cli() {
     display_header
-    echo -e "${CYAN}Starting Eclipse Node full installation...${NC}"
+    echo -e "${CYAN}Starting full installation for Bitz CLI...${NC}"
 
-    # Install Rust
+    echo -e "${YELLOW}Installing dependencies...${NC}"
+    sudo apt -qy install curl git jq lz4 build-essential screen
+    echo -e "${GREEN}Dependencies installed!${NC}"
+
     echo -e "${YELLOW}Installing Rust...${NC}"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source $HOME/.cargo/env
     echo -e "${GREEN}Rust installed!${NC}"
 
-    # Install Solana CLI
     echo -e "${YELLOW}Installing Solana CLI...${NC}"
     curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     echo -e "${GREEN}Solana CLI installed!${NC}"
 
-    # Create Solana wallet
-    echo -e "${YELLOW}Generating Solana wallet...${NC}"
+    echo -e "${YELLOW}Creating Solana wallet...${NC}"
     solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json
     echo -e "${GREEN}Wallet created!${NC}"
 
-    # Set RPC to Eclipse Mainnet automatically
-    solana config set --url https://mainnetbeta-rpc.eclipse.xyz
+    solana config set --url https://mainnetbeta-rpc.eclipse.xyz >/dev/null 2>&1
 
-    echo -e "${GREEN}Installation complete!${NC}"
+    echo -e "${YELLOW}Creating screen session 'bitz' and preparing command...${NC}"
+    screen -S bitz -dm bash -c 'read -p "Press Enter to run: cargo install bitz" && cargo install bitz; exec bash'
+
+    echo -e "${GREEN}Installation completed and screen 'bitz' is ready!${NC}"
+    echo -e "${CYAN}To enter it: ${YELLOW}screen -r bitz${NC}"
 }
 
-# Open screen named 'bitz' and pre-type cargo command
+# Create screen with cargo install preloaded
 start_bitz_screen() {
     display_header
     echo -e "${CYAN}Creating screen session 'bitz' and preparing command...${NC}"
-    
-    screen -S bitz -dm bash -c "read -p 'Press Enter to install Bitz...' && cargo install bitz"
-    
-    sleep 1
-    screen -r bitz
+    screen -S bitz -dm bash -c 'read -p "Press Enter to run: cargo install bitz" && cargo install bitz; exec bash'
+    echo -e "${GREEN}Screen 'bitz' created successfully!${NC}"
+    echo -e "${CYAN}To access it: ${YELLOW}screen -r bitz${NC}"
 }
 
-# Remove node and clean up
-remove_eclipse_node() {
+# Remove node and screen
+remove_bitz() {
     display_header
-    echo -e "${YELLOW}Stopping node inside screen session 'bitz'...${NC}"
+    echo -e "${YELLOW}Stopping screen session 'bitz' if it exists...${NC}"
+    screen -S bitz -X quit 2>/dev/null
+    echo -e "${GREEN}Screen 'bitz' closed (if it was running).${NC}"
 
-    # Stop the screen session
-    screen -S bitz -X quit
-    echo -e "${GREEN}Node stopped!${NC}"
-
-    # Remove wallet and configuration files
-    echo -e "${YELLOW}Removing Solana wallet and configuration files...${NC}"
+    echo -e "${YELLOW}Removing wallet and config files...${NC}"
     rm -f ~/.config/solana/id.json
     rm -f ~/.config/solana/config.json
-    echo -e "${GREEN}Wallet and config files removed!${NC}"
+    echo -e "${GREEN}Cleanup complete!${NC}"
 }
 
 # Main menu
@@ -102,23 +94,20 @@ main_menu() {
         display_header
         echo -e "${BLUE}To exit this script, press Ctrl+C${NC}"
         echo -e "${YELLOW}Choose an option below:${NC}"
-        echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet)${NC}"
-        echo -e "2) ${CYAN}Inicie o Bitz${NC}"
+        echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet + Screen)${NC}"
+        echo -e "2) ${CYAN}Start Bitz (Create screen with install command)${NC}"
         echo -e "3) ${RED}Remove Bitz${NC}"
-        echo -e "4) ${RED}Exit${NC}"
+        echo -e "4) ${MAGENTA}Exit${NC}"
 
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
 
         case $choice in
-            1)
-                install_dependencies
-                install_eclipse_node
-                ;;
+            1) install_bitz_cli ;;
             2) start_bitz_screen ;;
-            3) remove_eclipse_node ;;
+            3) remove_bitz ;;
             4)
                 echo -e "${GREEN}Exiting. Goodbye!${NC}"
-                echo -e "${YELLOW}Node (if running) is still active in the 'bitz' screen session.${NC}"
+                echo -e "${YELLOW}If screen 'bitz' is running, the node continues running in background.${NC}"
                 exit 0
                 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
