@@ -87,6 +87,20 @@ create_screen_and_start_node() {
     fi
 }
 
+# View logs from the screen session
+view_logs() {
+    display_header
+    echo -e "${YELLOW}Displaying logs from the 'eclipse' screen session...${NC}"
+
+    # Attach to the screen session to view logs
+    screen -r eclipse
+
+    # Check if the command was successful
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Could not attach to the screen session. Please make sure the node is running.${NC}"
+    fi
+}
+
 # Remove node and clean up
 remove_eclipse_node() {
     display_header
@@ -118,8 +132,9 @@ main_menu() {
         echo -e "${YELLOW}Choose an option below:${NC}"
         echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet)${NC}"
         echo -e "2) ${CYAN}Create Screen Session and Start ${NC}"
-        echo -e "3) ${RED}Remove Bitz ${NC}"
-        echo -e "4) ${RED}Exit${NC}"
+        echo -e "3) ${CYAN}View Logs from 'eclipse' Screen${NC}"
+        echo -e "4) ${RED}Remove Bitz ${NC}"
+        echo -e "5) ${RED}Exit${NC}"
 
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
 
@@ -129,8 +144,9 @@ main_menu() {
                 install_eclipse_node
                 ;;
             2) create_screen_and_start_node ;;
-            3) remove_eclipse_node ;;
-            4) 
+            3) view_logs ;;
+            4) remove_eclipse_node ;;
+            5) 
                 echo -e "${GREEN}Exiting. Goodbye!${NC}"
                 echo -e "${YELLOW}Node is still running in the 'eclipse' screen session!${NC}"
                 exit 0
