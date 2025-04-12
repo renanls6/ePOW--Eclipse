@@ -1,4 +1,4 @@
-# ePOW Mining - Script Setup OneClick
+# ePOW Mining - Script Setup OneClick 🐮⛏️
 
 # 1. Install Script
 ```bash 
