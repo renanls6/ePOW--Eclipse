@@ -61,6 +61,11 @@ install_bitz_cli() {
 start_bitz_screen() {
     display_header
     echo -e "${CYAN}Creating Screen 'bitz' and starting Bitz Mining...${NC}"
+
+    # Check if a screen session named 'bitz' already exists, and kill it if necessary
+    screen -S bitz -X quit 2>/dev/null
+
+    # Create the screen session and run the bitz installation command
     screen -S bitz -dm bash -c 'cargo install bitz; exec bash'  # Create screen and run the command
     echo -e "${GREEN}Screen 'bitz' created and mining started inside the screen.${NC}"
     
@@ -73,7 +78,10 @@ start_bitz_screen() {
 remove_bitz() {
     display_header
     echo -e "${YELLOW}Stopping and removing screen session 'bitz'...${NC}"
+
+    # Kill any existing 'bitz' screen session
     screen -S bitz -X quit 2>/dev/null
+
     echo -e "${GREEN}Screen 'bitz' has been stopped.${NC}"
 
     echo -e "${YELLOW}Removing Bitz setup...${NC}"
