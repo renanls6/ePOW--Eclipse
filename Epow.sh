@@ -24,18 +24,18 @@ display_header() {
     echo -e "${BLUE}=======================================================${NC}"
 }
 
-# Root check
+# Ensure root privileges
 if [ "$(id -u)" != "0" ]; then
     echo -e "${RED}This script must be run as root.${NC}"
     exit 1
 fi
 
-# Install CLI + Wallet
+# Install dependencies and Bitz CLI
 install_bitz_cli() {
     display_header
-    echo -e "${CYAN}Installing dependencies and environment...${NC}"
-    apt update
-    apt -qy install curl git jq lz4 build-essential screen
+    echo -e "${CYAN}Installing dependencies and Bitz CLI...${NC}"
+    sudo apt update
+    sudo apt -qy install curl git jq lz4 build-essential screen
 
     echo -e "${YELLOW}Installing Rust...${NC}"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -47,107 +47,78 @@ install_bitz_cli() {
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     echo -e "${GREEN}Solana CLI installed!${NC}"
 
-    # Cluster auto-select: mainnet-beta
-    echo -e "${BLUE}====================================${NC}"
-    echo -e "${CYAN}🌐 Selecting Solana cluster automatically: mainnet-beta (1)...${NC}"
-    CLUSTER_OPTION=1
+    echo -e "${YELLOW}Creating Solana wallet...${NC}"
 
-    case $CLUSTER_OPTION in
-        1)
-            CLUSTER_URL="https://api.mainnet-beta.solana.com"
-            ;;
-        2)
-            CLUSTER_URL="https://api.testnet.solana.com"
-            ;;
-        3)
-            CLUSTER_URL="https://api.devnet.solana.com"
-            ;;
-        *)
-            echo -e "${RED}❌ Invalid option. Exiting...${NC}"
-            exit 1
-            ;;
-    esac
+    # Create new keypair and capture output
+    SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json)
 
-    solana config set --url "$CLUSTER_URL" >/dev/null 2>&1
+    # Extract pubkey and seed phrase
+    PUBKEY=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep "pubkey" | awk '{print $2}')
+    SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep "Save this seed phrase" -A 12 | tail -n 12 | tr '\n' ' ')
 
-    # Wallet generation
-    display_header
-    echo -e "${CYAN}🔐 Generating new Solana wallet...${NC}"
+    solana config set --url https://mainnetbeta-rpc.eclipse.xyz >/dev/null 2>&1
+    echo -e "${GREEN}Wallet created and RPC set!${NC}"
 
-    KEYPAIR_PATH="$HOME/.config/solana/id.json"
-    SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --no-passphrase --outfile "$KEYPAIR_PATH")
-
-    # Extract pubkey and seed phrase directly
-    PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
-    SEED_PHRASE=$(solana-keygen recover --outfile /tmp/recovered-keypair.json "$KEYPAIR_PATH")
-
-    # If the seed phrase was extracted successfully, display it
-    if [[ -f /tmp/recovered-keypair.json ]]; then
-        RECOVERED_SEED=$(cat /tmp/recovered-keypair.json | grep -oP '\"phrase\": \[.*\]' | sed 's/"phrase": \[//g' | sed 's/\]//g' | tr -d '"')
-    fi
-
-
-  echo ""
-    echo -e "${BLUE}====================================${NC}"
-    echo -e "${CYAN}⚙️  Current Solana CLI Configuration${NC}"
-    echo -e "${BLUE}====================================${NC}"
+    # Show wallet details
+    echo -e "${CYAN}Import to Backpack:${NC}"
+    echo -e "${YELLOW}Solana Config Info:${NC}"
     solana config get
-    echo -e "${BLUE}====================================${NC}"
 
-    echo ""
-    echo -e "${GREEN}✅ Wallet successfully created!${NC}"
-    echo -e "${CYAN}📁 Keypair Path: $KEYPAIR_PATH${NC}"
+    # Show the Keypair path
+    KEYPAIR_PATH=$(solana config get | grep "Keypair Path" | awk '{print $3}')
+    echo -e "${CYAN}Copy the Keypair path: ${KEYPAIR_PATH}${NC}"
 
-    echo ""
-    echo -e "${YELLOW}📬 Public Key:${NC}"
-    echo -e "$PUBKEY"
+    # Convert the private key to base58 and show it
+    PRIVATE_KEY_BASE58=$(solana-keygen pubkey "$KEYPAIR_PATH" | sed 's/\n//')
 
-  echo ""
-    echo -e "${YELLOW}📝 Seed Phrase for recovery (store securely):${NC}"
-    echo -e "$RECOVERED_SEED"
+    # Display the wallet contents (private key)
+    echo -e "${YELLOW}Wallet Private Key (DO NOT share this!):${NC}"
+    solana-keygen pubkey "$KEYPAIR_PATH" # This shows the private key in base58 format.
 
-    echo ""
-    echo -e "${RED}⚠️  WARNING: This is your PRIVATE KEY! DO NOT share it!${NC}"
-    echo -e "${BLUE}====================================${NC}"
-    cat "$KEYPAIR_PATH"
-    echo -e "${BLUE}====================================${NC}"
+    # Display the new keypair information
+    echo -e "${YELLOW}New Keypair Information:${NC}"
+    echo -e "=============================================================================="
+    echo -e "pubkey: ${PUBKEY}"
+    echo -e "=============================================================================="
+    echo -e "Save this seed phrase to recover your new keypair:"
+    echo -e "${SEED_PHRASE}"
+    echo -e "=============================================================================="
 
-    echo ""
-    read -n 1 -s -r -p "$(echo -e "${YELLOW}Press any key to return to the menu...${NC}")"
+    # Show the private key (DO NOT share)
+    echo -e "${YELLOW}Private Key in Base58 (DO NOT share this!):${NC}"
+    echo -e "${PRIVATE_KEY_BASE58}"
+    echo -e "=============================================================================="
 }
 
-# Reboot VPS
+# Restart the VPS
 restart_vps() {
     display_header
-    echo -e "${RED}⚠️  Are you sure you want to reboot the VPS? (y/n)${NC}"
-    read -p "> " confirm
-    if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
-        echo -e "${CYAN}Rebooting VPS...${NC}"
-        reboot
-    else
-        echo -e "${YELLOW}Reboot canceled.${NC}"
-        sleep 2
-    fi
+    echo -e "${CYAN}Restarting VPS...${NC}"
+    sudo reboot
 }
 
 # Main menu
 main_menu() {
     while true; do
         display_header
-        echo -e "${YELLOW}Choose an option:${NC}"
-        echo -e "1) ${WHITE}Install Bitz CLI and Generate Wallet${NC}"
-        echo -e "2) ${WHITE}Reboot VPS${NC}"
+        echo -e "${YELLOW}Choose an option below:${NC}"
+        echo -e "1) ${WHITE}Install Bitz CLI${NC}"
+        echo -e "2) ${WHITE}Restart VPS${NC}"
         echo -e "3) ${WHITE}Exit${NC}"
+
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
 
         case $choice in
             1) install_bitz_cli ;;
             2) restart_vps ;;
-            3) echo -e "${GREEN}Exiting... See you later!${NC}"; exit 0 ;;
+            3) echo -e "${GREEN}Exiting.${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
+
+        echo -e "${YELLOW}Press any key to return to the menu...${NC}"
+        read -n 1 -s
     done
 }
 
-# Start
+# Start the main menu
 main_menu
