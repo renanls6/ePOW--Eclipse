@@ -53,46 +53,11 @@ install_bitz_cli() {
     echo -e "${GREEN}Wallet created and RPC set!${NC}"
 }
 
-# Create and start the Bitz screen
-create_bitz_screen() {
+# Restart the VPS
+restart_vps() {
     display_header
-    echo -e "${CYAN}Creating and opening Screen session 'bitz'...${NC}"
-
-    # Create screen session and run cargo install bitz
-    screen -S bitz -dm bash -c 'cargo install bitz; exec bash'
-
-    echo -e "${GREEN}Screen 'bitz' created successfully and ready to run 'cargo install bitz'!${NC}"
-    echo -e "${CYAN}You can access it using: ${YELLOW}screen -r bitz${NC}"
-}
-
-# Restart the Bitz node (stop the screen and restart it)
-restart_bitz_node() {
-    display_header
-    echo -e "${CYAN}Stopping current 'bitz' screen and restarting it...${NC}"
-
-    # Kill the existing 'bitz' screen session
-    screen -S bitz -X quit
-
-    # Create a new screen and start cargo install bitz
-    screen -S bitz -dm bash -c 'cargo install bitz; exec bash'
-
-    echo -e "${GREEN}Bitz node restarted successfully in the 'bitz' screen!${NC}"
-    echo -e "${CYAN}You can access it anytime using: ${YELLOW}screen -r bitz${NC}"
-}
-
-# Remove Bitz setup (optional)
-remove_bitz() {
-    display_header
-    echo -e "${YELLOW}Removing Bitz setup...${NC}"
-
-    # Kill the 'bitz' screen session
-    screen -S bitz -X quit 2>/dev/null
-
-    # Remove Solana wallet and config files
-    rm -f ~/.config/solana/id.json
-    rm -f ~/.config/solana/config.json
-
-    echo -e "${GREEN}Bitz setup removed successfully.${NC}"
+    echo -e "${CYAN}Restarting VPS...${NC}"
+    sudo reboot
 }
 
 # Main menu
@@ -101,19 +66,15 @@ main_menu() {
         display_header
         echo -e "${YELLOW}Choose an option below:${NC}"
         echo -e "1) ${WHITE}Install Bitz CLI${NC}"
-        echo -e "2) ${WHITE}Create and Start Bitz Screen${NC}"
-        echo -e "3) ${GREEN}Restart Bitz Node ⛏️${NC}"
-        echo -e "4) ${RED}Remove Bitz 🗑️${NC}"
-        echo -e "5) ${WHITE}Exit${NC}"
+        echo -e "2) ${WHITE}Restart VPS${NC}"
+        echo -e "3) ${WHITE}Exit${NC}"
 
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
 
         case $choice in
             1) install_bitz_cli ;;
-            2) create_bitz_screen ;;
-            3) restart_bitz_node ;;
-            4) remove_bitz ;;
-            5) echo -e "${GREEN}Exiting. Node may still be running in screen 'bitz'.${NC}"; exit 0 ;;
+            2) restart_vps ;;
+            3) echo -e "${GREEN}Exiting.${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
 
