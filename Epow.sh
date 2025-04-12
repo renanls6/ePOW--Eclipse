@@ -75,7 +75,7 @@ generate_wallet() {
     echo -e "${CYAN}=============================================================================="
     echo -e "${GREEN}Wallet Public Key (pubkey):${NC} ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "${GREEN}Seed phrase to recover your new keypair:${NC} ${SEED_PHRASE}"
+    echo -e "${GREEN}Seed phrase to recover your new keypair:${SEED_PHRASE}"
     echo -e "=============================================================================="
     echo -e "${RED}⚠️ WARNING: This is your private key, which will be imported into Backpack. DO NOT share it!${NC}"
     echo -e "${BLUE}====================================${NC}"
