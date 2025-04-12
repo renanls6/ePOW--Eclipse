@@ -58,7 +58,7 @@ install_bitz_cli() {
 }
 
 # Create screen session and run bitz mining (cargo install bitz inside screen)
-run_bitz_mining() {
+start_bitz_screen() {
     display_header
     echo -e "${CYAN}Creating Screen 'bitz' and starting Bitz Mining...${NC}"
     screen -S bitz -dm bash -c 'cargo install bitz; exec bash'
@@ -66,13 +66,17 @@ run_bitz_mining() {
     echo -e "${CYAN}You can access it anytime using:${NC} ${YELLOW}screen -r bitz${NC}"
 }
 
-# Remove Bitz files and screen
+# Remove Bitz files, kill screen session, and clean up
 remove_bitz() {
     display_header
+    echo -e "${YELLOW}Stopping and removing screen session 'bitz'...${NC}"
     screen -S bitz -X quit 2>/dev/null
+    echo -e "${GREEN}Screen 'bitz' has been stopped.${NC}"
+
     echo -e "${YELLOW}Removing Bitz setup...${NC}"
     rm -f ~/.config/solana/id.json
     rm -f ~/.config/solana/config.json
+    rm -f ~/.cargo/bin/bitz
     echo -e "${GREEN}Bitz removed successfully.${NC}"
 }
 
@@ -90,7 +94,7 @@ main_menu() {
 
         case $choice in
             1) install_bitz_cli ;;
-            2) run_bitz_mining ;;
+            2) start_bitz_screen ;;
             3) remove_bitz ;;
             4) echo -e "${GREEN}Exiting. Node may still be running in screen 'bitz'.${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
