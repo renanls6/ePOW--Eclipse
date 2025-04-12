@@ -101,9 +101,9 @@ main_menu() {
         display_header
         echo -e "${BLUE}To exit this script, press Ctrl+C${NC}"
         echo -e "${YELLOW}Choose an option below:${NC}"
-        echo -e "1) ${GREEN}Install Bitz(Rust + Solana + Wallet)${NC}"
-        echo -e "2) ${CYAN}Create Screen  and Start${NC}"
-        echo -e "3) ${RED}Remove Bitz (Stop node and remove files)${NC}"
+        echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet)${NC}"
+        echo -e "2) ${CYAN}Create Screen Session and Start ${NC}"
+        echo -e "3) ${RED}Remove Bitz ${NC}"
         echo -e "4) ${RED}Exit${NC}"
 
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
