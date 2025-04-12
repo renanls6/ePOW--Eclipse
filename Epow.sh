@@ -63,7 +63,7 @@ install_bitz_cli() {
     # Extract the public key
     PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
 
-    # Extract the seed phrase (directly from the output)
+    # Extract the seed phrase directly from the output
     SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep -A 12 "Save this seed phrase" | tail -n 12 | tr '\n' ' ')
 
     # Show wallet information
