@@ -48,7 +48,14 @@ install_bitz_cli() {
     echo -e "${GREEN}Solana CLI installed!${NC}"
 
     echo -e "${YELLOW}Creating Solana wallet...${NC}"
-    solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json
+
+    # Create new keypair and capture output
+    SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json)
+
+    # Extract pubkey and seed phrase
+    PUBKEY=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep "pubkey" | awk '{print $2}')
+    SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep "Save this seed phrase" -A 12 | tail -n 12 | tr '\n' ' ')
+
     solana config set --url https://mainnetbeta-rpc.eclipse.xyz >/dev/null 2>&1
     echo -e "${GREEN}Wallet created and RPC set!${NC}"
 
@@ -64,6 +71,20 @@ install_bitz_cli() {
     # Display the wallet contents (private key)
     echo -e "${YELLOW}Wallet Private Key (DO NOT share this!):${NC}"
     cat "$KEYPAIR_PATH"
+
+    # Display the new keypair information
+    echo -e "${YELLOW}New Keypair Information:${NC}"
+    echo -e "=============================================================================="
+    echo -e "pubkey: ${PUBKEY}"
+    echo -e "=============================================================================="
+    echo -e "Save this seed phrase to recover your new keypair:"
+    echo -e "${SEED_PHRASE}"
+    echo -e "=============================================================================="
+
+    # Show the private key (do not share)
+    echo -e "${YELLOW}Private Key (DO NOT share this!):${NC}"
+    cat "$KEYPAIR_PATH"
+    echo -e "=============================================================================="
 }
 
 # Restart the VPS
