@@ -66,55 +66,34 @@ install_eclipse_node() {
     # Set RPC to Eclipse Mainnet automatically
     solana config set --url https://mainnetbeta-rpc.eclipse.xyz
 
-    # Notify user that installation is complete
-    echo -e "${GREEN}Bitz installation completed! Now starting the node in a screen session...${NC}"
-
-    # Start the node in the 'eclipse' screen session
-    screen -S eclipse -dm bash -c "bitz collect"
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}Node started inside screen session 'eclipse'!${NC}"
-        echo -e "${CYAN}To view logs: screen -r eclipse${NC}"
-    else
-        echo -e "${RED}Failed to start the node. Please check the installation and try again.${NC}"
-    fi
+    echo -e "${GREEN}Installation complete!${NC}"
 }
 
-# View logs from the screen session
-view_logs() {
+# Open screen named 'bitz' and pre-type cargo command
+start_bitz_screen() {
     display_header
-    echo -e "${YELLOW}Displaying logs from the 'eclipse' screen session...${NC}"
-
-    # Attach to the screen session to view logs or start node if it's not running
-    screen -S eclipse -X quit 2>/dev/null
-    echo -e "${CYAN}Session 'eclipse' stopped. Starting the node in the session...${NC}"
+    echo -e "${CYAN}Creating screen session 'bitz' and preparing command...${NC}"
     
-    # Start the node in the 'eclipse' screen session with cargo install bitz (if it's not already running)
-    screen -S eclipse -dm bash -c "cargo install bitz && bitz collect"
-    echo -e "${GREEN}Node started inside screen session 'eclipse' with 'cargo install bitz'!${NC}"
-    echo -e "${CYAN}To view logs: screen -r eclipse${NC}"
+    screen -S bitz -dm bash -c "read -p 'Press Enter to install Bitz...' && cargo install bitz"
+    
+    sleep 1
+    screen -r bitz
 }
 
 # Remove node and clean up
 remove_eclipse_node() {
     display_header
-    echo -e "${YELLOW}Stopping node inside screen session 'eclipse'...${NC}"
+    echo -e "${YELLOW}Stopping node inside screen session 'bitz'...${NC}"
 
     # Stop the screen session
-    screen -S eclipse -X quit
+    screen -S bitz -X quit
     echo -e "${GREEN}Node stopped!${NC}"
 
-    # Optionally, remove wallet and configuration files
+    # Remove wallet and configuration files
     echo -e "${YELLOW}Removing Solana wallet and configuration files...${NC}"
     rm -f ~/.config/solana/id.json
     rm -f ~/.config/solana/config.json
     echo -e "${GREEN}Wallet and config files removed!${NC}"
-
-    # Optionally, remove Solana and Rust installations (if desired)
-    # echo -e "${YELLOW}Removing Solana CLI and Rust...${NC}"
-    # rm -rf $HOME/.local/share/solana
-    # rm -rf $HOME/.cargo
-    # rm -rf $HOME/.rustup
-    # echo -e "${GREEN}Solana CLI and Rust removed!${NC}"
 }
 
 # Main menu
@@ -123,23 +102,23 @@ main_menu() {
         display_header
         echo -e "${BLUE}To exit this script, press Ctrl+C${NC}"
         echo -e "${YELLOW}Choose an option below:${NC}"
-        echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet) and Start Node${NC}"
-        echo -e "2) ${CYAN}View Logs from 'eclipse' Screen or Restart Node${NC}"
-        echo -e "3) ${RED}Remove Bitz ${NC}"
+        echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet)${NC}"
+        echo -e "2) ${CYAN}Inicie o Bitz${NC}"
+        echo -e "3) ${RED}Remove Bitz${NC}"
         echo -e "4) ${RED}Exit${NC}"
 
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
 
         case $choice in
-            1) 
+            1)
                 install_dependencies
                 install_eclipse_node
                 ;;
-            2) view_logs ;;
+            2) start_bitz_screen ;;
             3) remove_eclipse_node ;;
-            4) 
+            4)
                 echo -e "${GREEN}Exiting. Goodbye!${NC}"
-                echo -e "${YELLOW}Node is still running in the 'eclipse' screen session!${NC}"
+                echo -e "${YELLOW}Node (if running) is still active in the 'bitz' screen session.${NC}"
                 exit 0
                 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
