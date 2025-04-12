@@ -66,14 +66,9 @@ install_bitz_cli() {
     # Extract the seed phrase directly from the output
     SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep -A 12 "Save this seed phrase" | tail -n 12 | tr '\n' ' ')
 
-    # Show wallet information
-    echo -e "${YELLOW}Node Config Info:${NC}"
-    solana config get
-
-    # Display information in the desired format
-    echo -e "${CYAN}"
-    echo -e "=============================================================================="
-    echo -e "${GREEN}pubkey:${NC} ${PUBKEY}"
+    # Display wallet information
+    echo -e "${CYAN}=============================================================================="
+    echo -e "${GREEN}Wallet Public Key (pubkey):${NC} ${PUBKEY}"
     echo -e "=============================================================================="
     echo -e "${YELLOW}Save this seed phrase to recover your new keypair:${NC}"
     echo -e "${SEED_PHRASE}"
@@ -87,11 +82,28 @@ install_bitz_cli() {
     read -n 1 -s -r -p "$(echo -e "${YELLOW}Press any key to return to the menu...${NC}")"
 }
 
-# Show Solana CLI Config
-show_solana_config() {
+# Show Wallet Information
+show_wallet_info() {
     display_header
-    echo -e "${CYAN}🌐 Displaying Solana CLI Configuration...${NC}"
-    solana config get
+    echo -e "${CYAN}💼 Displaying Wallet Information...${NC}"
+
+    # Fetch the keypair and extract details
+    KEYPAIR_PATH="$HOME/.config/solana/id.json"
+    PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
+    SEED_PHRASE=$(solana-keygen recover --no-passphrase --file "$KEYPAIR_PATH" | grep "Save this seed phrase" -A 12 | tail -n 12 | tr '\n' ' ')
+
+    # Show wallet information
+    echo -e "${CYAN}=============================================================================="
+    echo -e "${GREEN}Wallet Public Key (pubkey):${NC} ${PUBKEY}"
+    echo -e "=============================================================================="
+    echo -e "${YELLOW}Save this seed phrase to recover your new keypair:${NC}"
+    echo -e "${SEED_PHRASE}"
+    echo -e "=============================================================================="
+    echo -e "${RED}⚠️  WARNING: This is your PRIVATE KEY! DO NOT share it!${NC}"
+    echo -e "${BLUE}====================================${NC}"
+    cat "$KEYPAIR_PATH"
+    echo -e "${BLUE}====================================${NC}"
+
     echo ""
     read -n 1 -s -r -p "$(echo -e "${YELLOW}Press any key to return to the menu...${NC}")"
 }
@@ -116,7 +128,7 @@ main_menu() {
         display_header
         echo -e "${YELLOW}Choose an option:${NC}"
         echo -e " 1) ${WHITE}Install Solana Wallet${NC}"
-        echo -e " 2) ${WHITE}Show Solana CLI Config${NC}"
+        echo -e " 2) ${WHITE}Show Wallet Information${NC}"
         echo -e " 3) ${WHITE}Reboot VPS${NC}"
         echo -e " 4) ${WHITE}Exit${NC}"
         echo -e "${CYAN}====================================${NC}"
@@ -125,7 +137,7 @@ main_menu() {
 
         case $choice in
             1) install_bitz_cli ;;
-            2) show_solana_config ;;
+            2) show_wallet_info ;;
             3) restart_vps ;;
             4) echo -e "${GREEN}Exiting... See you later!${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
