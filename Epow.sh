@@ -20,7 +20,8 @@ display_header() {
     echo -e " ${BLUE}╚██████╔╝██╔╝ ██╗    ██║  ██║███████╗██║ ╚████║██║  ██║██║ ╚████║${NC}"
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
-    echo -e "${GREEN}       ✨ Eclipse Node Setup Script (bitz collect) ✨${NC}"
+    echo -e "${GREEN}       ➡️ Bitz Setup Script ⬅️${NC}"
+    echo -e "${GREEN}       💠 If this code was helpful,follow me on X: https://x.com/renanls6💠${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
@@ -30,6 +31,13 @@ if [ "$(id -u)" != "0" ]; then
     echo -e "${YELLOW}Please run 'sudo -i' and try again.${NC}"
     exit 1
 fi
+
+# Install required dependencies
+install_dependencies() {
+    echo -e "${YELLOW}Installing required dependencies...${NC}"
+    sudo apt -qy install curl git jq lz4 build-essential screen -y
+    echo -e "${GREEN}Dependencies installed successfully!${NC}"
+}
 
 # Load Rust if already installed
 source $HOME/.cargo/env 2>/dev/null
@@ -124,6 +132,9 @@ main_menu() {
         read -n 1 -s
     done
 }
+
+# Install dependencies first
+install_dependencies
 
 # Launch menu
 main_menu
