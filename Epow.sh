@@ -47,9 +47,9 @@ install_bitz_cli() {
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     echo -e "${GREEN}Solana CLI installed!${NC}"
 
-    # Automatically set the Solana cluster to Eclipse RPC
-    echo -e "${CYAN}🌐 Setting Solana CLI cluster to Eclipse RPC...${NC}"
-    solana config set --url https://mainnetbeta-rpc.eclipse.xyz >/dev/null 2>&1
+    # Automatically set the Solana cluster to Helius Eclipse RPC
+    echo -e "${CYAN}🌐 Setting Solana CLI cluster to Helius Eclipse RPC...${NC}"
+    solana config set --url https://eclipse.helius-rpc.com/ >/dev/null 2>&1
 
     # Wallet generation using `solana-keygen new` with --force flag
     display_header
