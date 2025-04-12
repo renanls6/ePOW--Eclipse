@@ -38,6 +38,9 @@ Start eMining
 bitz collect
 ```
 
+![node on](https://github.com/user-attachments/assets/346c2c5a-97d9-487b-b9b5-936195c97967)
+
+
 Other Commands:
 
 • Claim your Bitz: bitz claim
