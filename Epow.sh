@@ -9,11 +9,9 @@ WHITE='\033[1;37m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Global Variables
-KEYPAIR_PATH="$HOME/.config/solana/id.json"
-
-# Function to display a header
+# Display header
 display_header() {
+    clear
     echo -e "${CYAN}"
     echo -e " ${BLUE} ██████╗ ██╗  ██╗    ██████╗ ███████╗███╗   ██╗ █████╗ ███╗   ██╗${NC}"
     echo -e " ${BLUE}██╔═████╗╚██╗██╔╝    ██╔══██╗██╔════╝████╗  ██║██╔══██╗████╗  ██║${NC}"
@@ -22,86 +20,85 @@ display_header() {
     echo -e " ${BLUE}╚██████╔╝██╔╝ ██╗    ██║  ██║███████╗██║ ╚████║██║  ██║██║ ╚████║${NC}"
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
-    echo -e "${GREEN}       ✨ Bitz Setup Script ⛏️  ✨${NC}"
+    echo -e "${GREEN}       ✨ Solana Wallet Setup ✨${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
-# Function to ensure the script is run as root
-check_root() {
-    if [ "$(id -u)" != "0" ]; then
-        echo -e "${RED}This script must be run as root.${NC}"
-        exit 1
-    fi
-}
+# Root check
+if [ "$(id -u)" != "0" ]; then
+    echo -e "${RED}This script must be run as root.${NC}"
+    exit 1
+fi
 
-# Function to install necessary dependencies
-install_dependencies() {
-    echo -e "${CYAN}Installing dependencies...${NC}"
+# Install CLI + Wallet
+install_bitz_cli() {
+    display_header
+    echo -e "${CYAN}Installing dependencies and environment...${NC}"
     apt update
     apt -qy install curl git jq lz4 build-essential screen
-}
 
-# Function to install Rust
-install_rust() {
     echo -e "${YELLOW}Installing Rust...${NC}"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source $HOME/.cargo/env
     echo -e "${GREEN}Rust installed!${NC}"
-}
 
-# Function to install Solana CLI
-install_solana_cli() {
     echo -e "${YELLOW}Installing Solana CLI...${NC}"
     curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     echo -e "${GREEN}Solana CLI installed!${NC}"
-}
 
-# Function to set Solana cluster
-set_solana_cluster() {
+    # Automatically set the Solana cluster to mainnet-beta
     echo -e "${CYAN}🌐 Setting Solana CLI cluster to mainnet-beta...${NC}"
     solana config set --url "https://api.mainnet-beta.solana.com" >/dev/null 2>&1
-}
 
-# Function to generate the wallet and display keys
-generate_wallet() {
+    # Wallet generation using `solana-keygen new` with --force flag
     display_header
     echo -e "${CYAN}🔐 Generating new Solana wallet...${NC}"
 
+    KEYPAIR_PATH="$HOME/.config/solana/id.json"
+    
+    # Generate the new keypair and capture the output
     SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --force --no-passphrase --outfile "$KEYPAIR_PATH")
+
+    # Extract the public key
     PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
+
+    # Extract the seed phrase directly from the output
     SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep -A 12 "Save this seed phrase" | tail -n 12 | tr '\n' ' ')
 
-    echo -e "${CYAN}=============================================================================="
-    echo -e "${GREEN}Wallet Public Key (pubkey):${NC} ${PUBKEY}"
+    # Show wallet information
+    echo -e "${YELLOW}Node Config Info:${NC}"
+    solana config get
+
+    # Display information in the desired format
+    echo -e "${CYAN}"
     echo -e "=============================================================================="
-    echo -e "${GREEN}Seed phrase to recover your new keypair:${NC} ${SEED_PHRASE}"
+    echo -e "${GREEN}pubkey:${NC} ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "${RED}⚠️ WARNING: This is your private key, which will be imported into Backpack. DO NOT share it!${NC}"
+    echo -e "${YELLOW}Save this seed phrase to recover your new keypair:${NC}"
+    echo -e "${SEED_PHRASE}"
+    echo -e "=============================================================================="
+    echo -e "${RED}⚠️  WARNING: This is your PRIVATE KEY! DO NOT share it!${NC}"
     echo -e "${BLUE}====================================${NC}"
     cat "$KEYPAIR_PATH"
     echo -e "${BLUE}====================================${NC}"
+
+    echo ""
+    read -n 1 -s -r -p "$(echo -e "${YELLOW}Press any key to return to the menu...${NC}")"
 }
 
-# Function to create and run the Bitz node in the background using screen
-start_bitz_in_screen() {
-    echo -e "${CYAN}Starting Bitz node in a new screen session...${NC}"
-
-    # Create a new screen session and install/run Bitz
-    screen -dmS bitz-node-session bash -c "cargo install bitz && bitz; exec bash"
-
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}Bitz node is now running in the background in the 'bitz-node-session' screen session.${NC}"
-    else
-        echo -e "${RED}Failed to start the Bitz node in the screen session.${NC}"
-    fi
-}
-
-# Function to reboot the VPS
-reboot_vps() {
+# Reboot VPS
+restart_vps() {
     display_header
-    echo -e "${CYAN}Rebooting VPS automatically...${NC}"
-    reboot
+    echo -e "${RED}⚠️  Are you sure you want to reboot the VPS? (y/n)${NC}"
+    read -p "> " confirm
+    if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+        echo -e "${CYAN}Rebooting VPS...${NC}"
+        reboot
+    else
+        echo -e "${YELLOW}Reboot canceled.${NC}"
+        sleep 2
+    fi
 }
 
 # Main menu
@@ -110,25 +107,20 @@ main_menu() {
         display_header
         echo -e "${YELLOW}Choose an option:${NC}"
         echo -e " 1) ${WHITE}Install Solana Wallet${NC}"
-        echo -e " 2) ${WHITE}Show Wallet Information${NC}"
-        echo -e " 3) ${WHITE}Reboot VPS${NC}"
-        echo -e " 4) ${WHITE}Start Bitz Node in Screen${NC>"
-        echo -e " 5) ${WHITE}Exit${NC}"
+        echo -e " 2) ${WHITE}Reboot VPS${NC}"
+        echo -e " 3) ${WHITE}Exit${NC}"
         echo -e "${CYAN}====================================${NC}"
 
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
 
         case $choice in
-            1) install_dependencies && install_rust && install_solana_cli && set_solana_cluster && generate_wallet && start_bitz_in_screen ;;
-            2) generate_wallet ;;
-            3) reboot_vps ;;
-            4) start_bitz_in_screen ;;
-            5) echo -e "${GREEN}Exiting... See you later!${NC}"; exit 0 ;;
+            1) install_bitz_cli ;;
+            2) restart_vps ;;
+            3) echo -e "${GREEN}Exiting... See you later!${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
     done
 }
 
-# Main Execution
-check_root
+# Start
 main_menu
