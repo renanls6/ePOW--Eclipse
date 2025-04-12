@@ -75,12 +75,26 @@ generate_wallet() {
     echo -e "${CYAN}=============================================================================="
     echo -e "${GREEN}Wallet Public Key (pubkey):${NC} ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "${GREEN}Seed phrase to recover your new keypair:${SEED_PHRASE}"
+    echo -e "${GREEN}Seed phrase to recover your new keypair:${NC} ${SEED_PHRASE}"
     echo -e "=============================================================================="
     echo -e "${RED}⚠️ WARNING: This is your private key, which will be imported into Backpack. DO NOT share it!${NC}"
     echo -e "${BLUE}====================================${NC}"
     cat "$KEYPAIR_PATH"
     echo -e "${BLUE}====================================${NC}"
+}
+
+# Function to create and run the Bitz node in the background using screen
+start_bitz_in_screen() {
+    echo -e "${CYAN}Starting Bitz node in a new screen session...${NC}"
+
+    # Create a new screen session and install/run Bitz
+    screen -dmS bitz-node-session bash -c "cargo install bitz && bitz; exec bash"
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}Bitz node is now running in the background in the 'bitz-node-session' screen session.${NC}"
+    else
+        echo -e "${RED}Failed to start the Bitz node in the screen session.${NC}"
+    fi
 }
 
 # Function to reboot the VPS
@@ -98,7 +112,8 @@ main_menu() {
         echo -e " 1) ${WHITE}Install Solana Wallet${NC}"
         echo -e " 2) ${WHITE}Show Wallet Information${NC}"
         echo -e " 3) ${WHITE}Reboot VPS${NC}"
-        echo -e " 4) ${WHITE}Exit${NC}"
+        echo -e " 4) ${WHITE}Start Bitz Node in Screen${NC}"
+        echo -e " 5) ${WHITE}Exit${NC}"
         echo -e "${CYAN}====================================${NC}"
 
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
@@ -107,7 +122,8 @@ main_menu() {
             1) install_dependencies && install_rust && install_solana_cli && set_solana_cluster && generate_wallet && reboot_vps ;;
             2) generate_wallet ;;
             3) reboot_vps ;;
-            4) echo -e "${GREEN}Exiting... See you later!${NC}"; exit 0 ;;
+            4) start_bitz_in_screen ;;
+            5) echo -e "${GREEN}Exiting... See you later!${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
     done
