@@ -21,6 +21,7 @@ display_header() {
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
     echo -e "${GREEN}       ✨ Bitz Setup Script ⛏️  ✨${NC}"
+    echo -e "${GREEN}       ✨ Follow me on X :https://x.com/renanls6  ✨${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
