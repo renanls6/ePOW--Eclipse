@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 display_header() {
     clear
     echo -e "${CYAN}"
-     echo -e " ${BLUE} ██████╗ ██╗  ██╗    ██████╗ ███████╗███╗   ██╗ █████╗ ███╗   ██╗${NC}"
+    echo -e " ${BLUE} ██████╗ ██╗  ██╗    ██████╗ ███████╗███╗   ██╗ █████╗ ███╗   ██╗${NC}"
     echo -e " ${BLUE}██╔═████╗╚██╗██╔╝    ██╔══██╗██╔════╝████╗  ██║██╔══██╗████╗  ██║${NC}"
     echo -e " ${BLUE}██║██╔██║ ╚███╔╝     ██████╔╝█████╗  ██╔██╗ ██║███████║██╔██╗ ██║${NC}"
     echo -e " ${BLUE}████╔╝██║ ██╔██╗     ██╔══██╗██╔══╝  ██║╚██╗██║██╔══██║██║╚██╗██║${NC}"
@@ -56,6 +56,11 @@ install_eclipse_node() {
     solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json
     echo -e "${GREEN}Wallet created!${NC}"
 
+    # Set RPC to Eclipse Mainnet automatically
+    echo -e "${YELLOW}Configuring RPC to Eclipse Mainnet automatically...${NC}"
+    solana config set --url https://mainnetbeta-rpc.eclipse.xyz
+    echo -e "${GREEN}RPC set to Eclipse Mainnet automatically!${NC}"
+
     # Start node with screen
     echo -e "${YELLOW}Starting node with screen session 'eclipse'...${NC}"
     screen -S eclipse -dm bash -c "bitz collect"
@@ -77,7 +82,7 @@ main_menu() {
 
         case $choice in
             1) install_eclipse_node ;;
-            2) 
+            2)
                 echo -e "${YELLOW}Starting node...${NC}"
                 screen -S eclipse -dm bash -c "bitz collect"
                 echo -e "${GREEN}Node started in screen session 'eclipse'!${NC}"
