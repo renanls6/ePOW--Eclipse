@@ -51,15 +51,18 @@ install_bitz_cli() {
     echo -e "${CYAN}🌐 Setting Solana CLI cluster to mainnet-beta...${NC}"
     solana config set --url "https://api.mainnet-beta.solana.com" >/dev/null 2>&1
 
-    # Wallet generation using `solana-keygen new`
+    # Wallet generation using `solana-keygen new` with --force flag
     display_header
     echo -e "${CYAN}🔐 Generating new Solana wallet...${NC}"
 
     KEYPAIR_PATH="$HOME/.config/solana/id.json"
-    solana-keygen new --no-passphrase --outfile "$KEYPAIR_PATH"
+    solana-keygen new --force --no-passphrase --outfile "$KEYPAIR_PATH"
 
     # Show wallet public key
     PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
+
+    # Extract seed phrase (it should be visible in the output of solana-keygen new)
+    SEED_PHRASE=$(solana-keygen new --no-passphrase --outfile "$KEYPAIR_PATH" | grep "Save this seed phrase" -A 12 | tail -n 12)
 
     # Show the configuration of Solana CLI
     echo -e "${YELLOW}Node Config Info:${NC}"
@@ -71,7 +74,6 @@ install_bitz_cli() {
     echo -e "${GREEN}pubkey:${NC} ${PUBKEY}"
     echo -e "=============================================================================="
     echo -e "${YELLOW}Save this seed phrase to recover your new keypair:${NC}"
-    SEED_PHRASE=$(cat "$KEYPAIR_PATH" | jq -r '.seed_phrase')
     echo -e "${SEED_PHRASE}"
     echo -e "=============================================================================="
     echo -e "${RED}⚠️  WARNING: This is your PRIVATE KEY! DO NOT share it!${NC}"
