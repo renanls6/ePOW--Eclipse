@@ -87,10 +87,20 @@ show_wallet_info() {
     display_header
     echo -e "${CYAN}💼 Displaying Wallet Information...${NC}"
 
-    # Fetch the keypair and extract details
+    # Path to the keypair
     KEYPAIR_PATH="$HOME/.config/solana/id.json"
+    
+    # Ensure the keypair exists
+    if [ ! -f "$KEYPAIR_PATH" ]; then
+        echo -e "${RED}Error: Keypair not found. Please generate a wallet first.${NC}"
+        return
+    fi
+
+    # Extract public key
     PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
-    SEED_PHRASE=$(solana-keygen recover --no-passphrase --file "$KEYPAIR_PATH" | grep "Save this seed phrase" -A 12 | tail -n 12 | tr '\n' ' ')
+
+    # Retrieve the seed phrase (from the file content, if it exists)
+    SEED_PHRASE=$(solana-keygen recover --force "$KEYPAIR_PATH" | grep -A 12 "Save this seed phrase" | tail -n 12 | tr '\n' ' ')
 
     # Show wallet information
     echo -e "${CYAN}=============================================================================="
