@@ -21,25 +21,21 @@ display_header() {
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
     echo -e "${GREEN}       ✨ Bitz Setup Script ⛏️💎✨${NC}"
-    echo -e "${GREEN}       ✨ If this script was helpful, feel free to follow me on X: https://x.com/renanls6 ✨${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
 # Ensure root privileges
 if [ "$(id -u)" != "0" ]; then
     echo -e "${RED}This script must be run as root.${NC}"
-    echo -e "${YELLOW}Please run 'sudo -i' and try again.${NC}"
     exit 1
 fi
 
-source $HOME/.cargo/env 2>/dev/null
-
-# Install Bitz CLI
+# Install dependencies and Bitz CLI
 install_bitz_cli() {
     display_header
     echo -e "${CYAN}Installing dependencies and Bitz CLI...${NC}"
+    sudo apt update
     sudo apt -qy install curl git jq lz4 build-essential screen
-    echo -e "${GREEN}Dependencies installed!${NC}"
 
     echo -e "${YELLOW}Installing Rust...${NC}"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -57,38 +53,46 @@ install_bitz_cli() {
     echo -e "${GREEN}Wallet created and RPC set!${NC}"
 }
 
-# Create screen session and run bitz mining (cargo install bitz inside screen)
-start_bitz_screen() {
+# Create and start the Bitz screen
+create_bitz_screen() {
     display_header
-    echo -e "${CYAN}Creating Screen 'bitz' and starting Bitz Mining...${NC}"
+    echo -e "${CYAN}Creating and opening Screen session 'bitz'...${NC}"
 
-    # Check if a screen session named 'bitz' already exists, and kill it if necessary
-    screen -S bitz -X quit 2>/dev/null
+    # Create screen session and run cargo install bitz
+    screen -S bitz -dm bash -c 'cargo install bitz; exec bash'
 
-    # Create the screen session and run the bitz installation command
-    screen -S bitz -dm bash -c 'cargo install bitz; exec bash'  # Create screen and run the command
-    echo -e "${GREEN}Screen 'bitz' created and mining started inside the screen.${NC}"
-    
-    # After creating the screen, attach to it immediately
-    echo -e "${CYAN}Attaching to the 'bitz' screen...${NC}"
-    screen -r bitz  # This will bring you into the screen session
+    echo -e "${GREEN}Screen 'bitz' created successfully and ready to run 'cargo install bitz'!${NC}"
+    echo -e "${CYAN}You can access it using: ${YELLOW}screen -r bitz${NC}"
 }
 
-# Remove Bitz files, kill screen session, and clean up
+# Restart the Bitz node (stop the screen and restart it)
+restart_bitz_node() {
+    display_header
+    echo -e "${CYAN}Stopping current 'bitz' screen and restarting it...${NC}"
+
+    # Kill the existing 'bitz' screen session
+    screen -S bitz -X quit
+
+    # Create a new screen and start cargo install bitz
+    screen -S bitz -dm bash -c 'cargo install bitz; exec bash'
+
+    echo -e "${GREEN}Bitz node restarted successfully in the 'bitz' screen!${NC}"
+    echo -e "${CYAN}You can access it anytime using: ${YELLOW}screen -r bitz${NC}"
+}
+
+# Remove Bitz setup (optional)
 remove_bitz() {
     display_header
-    echo -e "${YELLOW}Stopping and removing screen session 'bitz'...${NC}"
+    echo -e "${YELLOW}Removing Bitz setup...${NC}"
 
-    # Kill any existing 'bitz' screen session
+    # Kill the 'bitz' screen session
     screen -S bitz -X quit 2>/dev/null
 
-    echo -e "${GREEN}Screen 'bitz' has been stopped.${NC}"
-
-    echo -e "${YELLOW}Removing Bitz setup...${NC}"
+    # Remove Solana wallet and config files
     rm -f ~/.config/solana/id.json
     rm -f ~/.config/solana/config.json
-    rm -f ~/.cargo/bin/bitz
-    echo -e "${GREEN}Bitz removed successfully.${NC}"
+
+    echo -e "${GREEN}Bitz setup removed successfully.${NC}"
 }
 
 # Main menu
@@ -97,17 +101,19 @@ main_menu() {
         display_header
         echo -e "${YELLOW}Choose an option below:${NC}"
         echo -e "1) ${WHITE}Install Bitz CLI${NC}"
-        echo -e "2) ${GREEN}Run Bitz Mining ⛏️${NC}"
-        echo -e "3) ${RED}Remove Bitz 🗑️${NC}"
-        echo -e "4) ${WHITE}Exit${NC}"
+        echo -e "2) ${WHITE}Create and Start Bitz Screen${NC}"
+        echo -e "3) ${GREEN}Restart Bitz Node ⛏️${NC}"
+        echo -e "4) ${RED}Remove Bitz 🗑️${NC}"
+        echo -e "5) ${WHITE}Exit${NC}"
 
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
 
         case $choice in
             1) install_bitz_cli ;;
-            2) start_bitz_screen ;;
-            3) remove_bitz ;;
-            4) echo -e "${GREEN}Exiting. Node may still be running in screen 'bitz'.${NC}"; exit 0 ;;
+            2) create_bitz_screen ;;
+            3) restart_bitz_node ;;
+            4) remove_bitz ;;
+            5) echo -e "${GREEN}Exiting. Node may still be running in screen 'bitz'.${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
 
@@ -116,5 +122,5 @@ main_menu() {
     done
 }
 
-# Start menu
+# Start the main menu
 main_menu
