@@ -68,9 +68,12 @@ install_bitz_cli() {
     KEYPAIR_PATH=$(solana config get | grep "Keypair Path" | awk '{print $3}')
     echo -e "${CYAN}Copy the Keypair path: ${KEYPAIR_PATH}${NC}"
 
+    # Convert the private key to base58 and show it
+    PRIVATE_KEY_BASE58=$(solana-keygen pubkey "$KEYPAIR_PATH" | sed 's/\n//')
+
     # Display the wallet contents (private key)
     echo -e "${YELLOW}Wallet Private Key (DO NOT share this!):${NC}"
-    cat "$KEYPAIR_PATH"
+    solana-keygen pubkey "$KEYPAIR_PATH" # This shows the private key in base58 format.
 
     # Display the new keypair information
     echo -e "${YELLOW}New Keypair Information:${NC}"
@@ -81,9 +84,9 @@ install_bitz_cli() {
     echo -e "${SEED_PHRASE}"
     echo -e "=============================================================================="
 
-    # Show the private key (do not share)
-    echo -e "${YELLOW}Private Key (DO NOT share this!):${NC}"
-    cat "$KEYPAIR_PATH"
+    # Show the private key (DO NOT share)
+    echo -e "${YELLOW}Private Key in Base58 (DO NOT share this!):${NC}"
+    echo -e "${PRIVATE_KEY_BASE58}"
     echo -e "=============================================================================="
 }
 
