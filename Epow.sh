@@ -112,14 +112,14 @@ main_menu() {
         echo -e " 1) ${WHITE}Install Solana Wallet${NC}"
         echo -e " 2) ${WHITE}Show Wallet Information${NC}"
         echo -e " 3) ${WHITE}Reboot VPS${NC}"
-        echo -e " 4) ${WHITE}Start Bitz Node in Screen${NC}"
+        echo -e " 4) ${WHITE}Start Bitz Node in Screen${NC>"
         echo -e " 5) ${WHITE}Exit${NC}"
         echo -e "${CYAN}====================================${NC}"
 
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
 
         case $choice in
-            1) install_dependencies && install_rust && install_solana_cli && set_solana_cluster && generate_wallet && reboot_vps ;;
+            1) install_dependencies && install_rust && install_solana_cli && set_solana_cluster && generate_wallet && start_bitz_in_screen ;;
             2) generate_wallet ;;
             3) reboot_vps ;;
             4) start_bitz_in_screen ;;
