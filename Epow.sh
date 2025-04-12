@@ -20,7 +20,7 @@ display_header() {
     echo -e " ${BLUE}╚██████╔╝██╔╝ ██╗    ██║  ██║███████╗██║ ╚████║██║  ██║██║ ╚████║${NC}"
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
-    echo -e "${GREEN}       ✨ Solana Wallet Setup ✨${NC}"
+    echo -e "${GREEN}       ✨ Bitz Setup Script ⛏️  ✨${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
@@ -70,10 +70,9 @@ install_bitz_cli() {
     echo -e "${CYAN}=============================================================================="
     echo -e "${GREEN}Wallet Public Key (pubkey):${NC} ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "${YELLOW}Save this seed phrase to recover your new keypair:${NC}"
-    echo -e "${SEED_PHRASE}"
+    echo -e "${GREEN}Seed phrase to recover your new keypair:${NC} ${SEED_PHRASE}"
     echo -e "=============================================================================="
-    echo -e "${RED}⚠️  WARNING: This is your PRIVATE KEY! DO NOT share it!${NC}"
+    echo -e "${RED}⚠️  WARNING: This is your private key, which will be imported into Backpack. DO NOT share it!!${NC}"
     echo -e "${BLUE}====================================${NC}"
     cat "$KEYPAIR_PATH"
     echo -e "${BLUE}====================================${NC}"
@@ -87,9 +86,6 @@ show_wallet_info() {
     display_header
     echo -e "${CYAN}💼 Displaying Wallet Information...${NC}"
 
-    # Path to the keypair
-    KEYPAIR_PATH="$HOME/.config/solana/id.json"
-    
     # Ensure the keypair exists
     if [ ! -f "$KEYPAIR_PATH" ]; then
         echo -e "${RED}Error: Keypair not found. Please generate a wallet first.${NC}"
