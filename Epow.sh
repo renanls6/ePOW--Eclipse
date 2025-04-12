@@ -5,7 +5,6 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-WHITE='\033[1;37m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
@@ -20,22 +19,22 @@ display_header() {
     echo -e " ${BLUE}╚██████╔╝██╔╝ ██╗    ██║  ██║███████╗██║ ╚████║██║  ██║██║ ╚████║${NC}"
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
-    echo -e "${GREEN}       ✨ Solana Wallet Setup ✨${NC}"
+    echo -e "${GREEN}       ✨ Bitz Setup Script ⛏️  ✨${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
-# Root check
+# Ensure root privileges
 if [ "$(id -u)" != "0" ]; then
     echo -e "${RED}This script must be run as root.${NC}"
     exit 1
 fi
 
-# Install CLI + Wallet
+# Install dependencies and Solana CLI
 install_bitz_cli() {
     display_header
-    echo -e "${CYAN}Installing dependencies and environment...${NC}"
-    apt update
-    apt -qy install curl git jq lz4 build-essential screen
+    echo -e "${CYAN}Installing dependencies and Solana CLI...${NC}"
+    sudo apt update
+    sudo apt -qy install curl git jq lz4 build-essential screen
 
     echo -e "${YELLOW}Installing Rust...${NC}"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -47,80 +46,67 @@ install_bitz_cli() {
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     echo -e "${GREEN}Solana CLI installed!${NC}"
 
-    # Automatically set the Solana cluster to mainnet-beta
-    echo -e "${CYAN}🌐 Setting Solana CLI cluster to mainnet-beta...${NC}"
-    solana config set --url "https://api.mainnet-beta.solana.com" >/dev/null 2>&1
+    echo -e "${YELLOW}Creating Solana wallet...${NC}"
 
-    # Wallet generation using `solana-keygen new` with --force flag
-    display_header
-    echo -e "${CYAN}🔐 Generating new Solana wallet...${NC}"
+    # Create new keypair and capture output
+    SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json)
 
-    KEYPAIR_PATH="$HOME/.config/solana/id.json"
-    
-    # Generate the new keypair and capture the output
-    SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --force --no-passphrase --outfile "$KEYPAIR_PATH")
-
-    # Extract the public key
-    PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
-
-    # Extract the seed phrase directly from the output
+    # Extract pubkey and seed phrase
+    PUBKEY=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep "pubkey" | awk '{print $2}')
     SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep -A 12 "Save this seed phrase" | tail -n 12 | tr '\n' ' ')
 
-    # Show wallet information
-    echo -e "${YELLOW}Node Config Info:${NC}"
+    solana config set --url https://mainnet-beta.solana.com >/dev/null 2>&1
+    echo -e "${GREEN}Wallet created and RPC set!${NC}"
+
+    # Show wallet details
+    echo -e "${CYAN}Import to Backpack:${NC}"
+    echo -e "${YELLOW}Solana Config Info:${NC}"
     solana config get
 
-    # Display information in the desired format
-    echo -e "${CYAN}"
+    # Show the Keypair path
+    KEYPAIR_PATH=$(solana config get | grep "Keypair Path" | awk '{print $3}')
+    echo -e "${CYAN}Copy the Keypair path: ${KEYPAIR_PATH}${NC}"
+
+    # Display the wallet contents (private key)
+    echo -e "${YELLOW}Wallet Private Key (DO NOT share this!):${NC}"
+    solana-keygen pubkey "$KEYPAIR_PATH" # This shows the private key in base58 format.
+
+    # Display the new keypair information
+    echo -e "${YELLOW}New Keypair Information:${NC}"
     echo -e "=============================================================================="
-    echo -e "${GREEN}pubkey:${NC} ${PUBKEY}"
+    echo -e "pubkey: ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "${YELLOW}Save this seed phrase to recover your new keypair:${NC}"
+    echo -e "Save this seed phrase to recover your new keypair:"
     echo -e "${SEED_PHRASE}"
     echo -e "=============================================================================="
-    echo -e "${RED}⚠️  WARNING: This is your PRIVATE KEY! DO NOT share it!${NC}"
-    echo -e "${BLUE}====================================${NC}"
-    cat "$KEYPAIR_PATH"
-    echo -e "${BLUE}====================================${NC}"
 
-    echo ""
-    read -n 1 -s -r -p "$(echo -e "${YELLOW}Press any key to return to the menu...${NC}")"
-}
-
-# Reboot VPS
-restart_vps() {
-    display_header
-    echo -e "${RED}⚠️  Are you sure you want to reboot the VPS? (y/n)${NC}"
-    read -p "> " confirm
-    if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
-        echo -e "${CYAN}Rebooting VPS...${NC}"
-        reboot
-    else
-        echo -e "${YELLOW}Reboot canceled.${NC}"
-        sleep 2
-    fi
+    # Show the private key (DO NOT share)
+    echo -e "${YELLOW}Private Key in Base58 (DO NOT share this!):${NC}"
+    PRIVATE_KEY_BASE58=$(solana-keygen pubkey "$KEYPAIR_PATH" | sed 's/\n//')
+    echo -e "${PRIVATE_KEY_BASE58}"
+    echo -e "=============================================================================="
 }
 
 # Main menu
 main_menu() {
     while true; do
         display_header
-        echo -e "${YELLOW}Choose an option:${NC}"
-        echo -e " 1) ${WHITE}Install Solana Wallet${NC}"
-        echo -e " 2) ${WHITE}Reboot VPS${NC}"
-        echo -e " 3) ${WHITE}Exit${NC}"
-        echo -e "${CYAN}====================================${NC}"
+        echo -e "${YELLOW}Choose an option below:${NC}"
+        echo -e "1) ${WHITE}Install Solana CLI${NC}"
+        echo -e "2) ${WHITE}Exit${NC}"
 
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
 
         case $choice in
             1) install_bitz_cli ;;
-            2) restart_vps ;;
-            3) echo -e "${GREEN}Exiting... See you later!${NC}"; exit 0 ;;
+            2) echo -e "${GREEN}Exiting.${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
+
+        echo -e "${YELLOW}Press any key to return to the menu...${NC}"
+        read -n 1 -s
     done
 }
 
-# Start
+# Start the main menu
 main_menu
