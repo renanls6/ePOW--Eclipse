@@ -51,6 +51,19 @@ install_bitz_cli() {
     solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json
     solana config set --url https://mainnetbeta-rpc.eclipse.xyz >/dev/null 2>&1
     echo -e "${GREEN}Wallet created and RPC set!${NC}"
+
+    # Show wallet details
+    echo -e "${CYAN}Import to Backpack:${NC}"
+    echo -e "${YELLOW}Solana Config Info:${NC}"
+    solana config get
+
+    # Show the Keypair path
+    KEYPAIR_PATH=$(solana config get | grep "Keypair Path" | awk '{print $3}')
+    echo -e "${CYAN}Copy the Keypair path: ${KEYPAIR_PATH}${NC}"
+
+    # Display the wallet contents (private key)
+    echo -e "${YELLOW}Wallet Private Key (DO NOT share this!):${NC}"
+    cat "$KEYPAIR_PATH"
 }
 
 # Restart the VPS
