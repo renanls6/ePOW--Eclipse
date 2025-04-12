@@ -61,9 +61,10 @@ install_bitz_cli() {
 start_bitz_screen() {
     display_header
     echo -e "${CYAN}Creating Screen Bitz Mining ${NC}"
-    screen -S bitz
+    screen -S bitz -dm bash
     echo -e "${GREEN}Screen 'bitz' created successfully!${NC}"
-    echo -e "${CYAN}To access it: ${YELLOW}screen -r bitz${NC}"
+    echo -e "${CYAN}The screen is now open. You can access it using:${NC} ${YELLOW}screen -r bitz${NC}"
+    echo -e "${CYAN}Returning to the main menu...${NC}"
 }
 
 # Run bitz mining (cargo install bitz inside screen)
