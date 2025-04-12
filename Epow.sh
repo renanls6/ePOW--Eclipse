@@ -20,7 +20,7 @@ display_header() {
     echo -e " ${BLUE}╚██████╔╝██╔╝ ██╗    ██║  ██║███████╗██║ ╚████║██║  ██║██║ ╚████║${NC}"
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
-    echo -e "${GREEN}       ✨ Solana Wallet Setup ✨${NC}"
+    echo -e "${GREEN}       ✨ Bitz Setup Script ⛏️  ✨${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
@@ -87,18 +87,12 @@ install_bitz_cli() {
     read -n 1 -s -r -p "$(echo -e "${YELLOW}Press any key to return to the menu...${NC}")"
 }
 
-# Reboot VPS
+# Reboot VPS (automatic)
 restart_vps() {
     display_header
-    echo -e "${RED}⚠️  Are you sure you want to reboot the VPS? (y/n)${NC}"
-    read -p "> " confirm
-    if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
-        echo -e "${CYAN}Rebooting VPS...${NC}"
-        reboot
-    else
-        echo -e "${YELLOW}Reboot canceled.${NC}"
-        sleep 2
-    fi
+    echo -e "${CYAN}Rebooting VPS automatically...${NC}"
+    sleep 2
+    reboot
 }
 
 # Main menu
@@ -106,7 +100,7 @@ main_menu() {
     while true; do
         display_header
         echo -e "${YELLOW}Choose an option:${NC}"
-        echo -e " 1) ${WHITE}Install Solana Wallet${NC}"
+        echo -e " 1) ${WHITE}Install Bitz${NC}"
         echo -e " 2) ${WHITE}Reboot VPS${NC}"
         echo -e " 3) ${WHITE}Exit${NC}"
         echo -e "${CYAN}====================================${NC}"
