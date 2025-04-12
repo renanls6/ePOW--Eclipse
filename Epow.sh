@@ -66,16 +66,15 @@ install_bitz_cli() {
     # Extract the seed phrase directly from the output
     SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep -A 12 "Save this seed phrase" | tail -n 12 | tr '\n' ' ')
 
-    # Show wallet information
-    echo -e "${YELLOW}Node Config Info:${NC}"
-    solana config get
+    # Hide Solana config output
+    solana config get >/dev/null 2>&1
 
-    # Display information in the desired format
+    # Display wallet info
     echo -e "${CYAN}"
     echo -e "=============================================================================="
     echo -e "${GREEN}pubkey:${NC} ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "${CYAN}Seed phrase to recover your new keypair:${NC}"
+    echo -e "${CYAN}Seed phrase to recover your new keypair:${}"
     echo -e "${SEED_PHRASE}"
     echo -e "=============================================================================="
     echo -e "${RED}⚠️  This is your private key that will be imported into Backpack. DO NOT share it!${NC}"
