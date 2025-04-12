@@ -57,22 +57,12 @@ install_bitz_cli() {
     echo -e "${GREEN}Wallet created and RPC set!${NC}"
 }
 
-# Create screen session (option 2)
-start_bitz_screen() {
-    display_header
-    echo -e "${CYAN}Creating Screen Bitz Mining ${NC}"
-    screen -S bitz -dm bash
-    echo -e "${GREEN}Screen 'bitz' created successfully!${NC}"
-    echo -e "${CYAN}The screen is now open. You can access it using:${NC} ${YELLOW}screen -r bitz${NC}"
-    echo -e "${CYAN}Returning to the main menu...${NC}"
-}
-
-# Run bitz mining (cargo install bitz inside screen)
+# Create screen session and run bitz mining (cargo install bitz inside screen)
 run_bitz_mining() {
     display_header
-    echo -e "${YELLOW}Launching mining inside screen 'bitz'...${NC}"
-    screen -S bitz -dm bash -c 'bash -i -c "cargo install bitz; exec bash"'
-    echo -e "${GREEN}Mining started inside screen 'bitz'.${NC}"
+    echo -e "${CYAN}Creating Screen 'bitz' and starting Bitz Mining...${NC}"
+    screen -S bitz -dm bash -c 'cargo install bitz; exec bash'
+    echo -e "${GREEN}Screen 'bitz' created and mining started inside the screen.${NC}"
     echo -e "${CYAN}You can access it anytime using:${NC} ${YELLOW}screen -r bitz${NC}"
 }
 
@@ -92,19 +82,17 @@ main_menu() {
         display_header
         echo -e "${YELLOW}Choose an option below:${NC}"
         echo -e "1) ${WHITE}Install Bitz CLI${NC}"
-        echo -e "2) ${WHITE}Create Screen${NC}"
-        echo -e "3) ${GREEN}Run Bitz Mining ⛏️${NC}"
-        echo -e "4) ${RED}Remove Bitz 🗑️${NC}"
-        echo -e "5) ${WHITE}Exit${NC}"
+        echo -e "2) ${GREEN}Run Bitz Mining ⛏️${NC}"
+        echo -e "3) ${RED}Remove Bitz 🗑️${NC}"
+        echo -e "4) ${WHITE}Exit${NC}"
 
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
 
         case $choice in
             1) install_bitz_cli ;;
-            2) start_bitz_screen ;;
-            3) run_bitz_mining ;;
-            4) remove_bitz ;;
-            5) echo -e "${GREEN}Exiting. Node may still be running in screen 'bitz'.${NC}"; exit 0 ;;
+            2) run_bitz_mining ;;
+            3) remove_bitz ;;
+            4) echo -e "${GREEN}Exiting. Node may still be running in screen 'bitz'.${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
 
