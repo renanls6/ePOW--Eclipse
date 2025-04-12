@@ -20,8 +20,7 @@ display_header() {
     echo -e " ${BLUE}╚██████╔╝██╔╝ ██╗    ██║  ██║███████╗██║ ╚████║██║  ██║██║ ╚████║${NC}"
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
-    echo -e "${GREEN}       ➡️ Bitz Setup Script ⬅️${NC}"
-    echo -e "${GREEN}       💠 If this code was helpful,follow me on X: https://x.com/renanls6💠${NC}"
+    echo -e "${GREEN}       ✨ Eclipse Node Setup Script (bitz collect) ✨${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
@@ -32,11 +31,11 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
-# Install required dependencies
+# Install necessary packages
 install_dependencies() {
-    echo -e "${YELLOW}Installing required dependencies...${NC}"
-    sudo apt -qy install curl git jq lz4 build-essential screen -y
-    echo -e "${GREEN}Dependencies installed successfully!${NC}"
+    echo -e "${YELLOW}Installing necessary packages...${NC}"
+    apt -qy install curl git jq lz4 build-essential screen -y
+    echo -e "${GREEN}Dependencies installed!${NC}"
 }
 
 # Load Rust if already installed
@@ -64,7 +63,7 @@ install_eclipse_node() {
     solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json
     echo -e "${GREEN}Wallet created!${NC}"
 
-    # Set RPC to Eclipse Mainnet automatically (no output shown to user)
+    # Set RPC to Eclipse Mainnet automatically
     solana config set --url https://mainnetbeta-rpc.eclipse.xyz
 
     # Notify user that installation is complete
@@ -75,9 +74,17 @@ install_eclipse_node() {
 create_screen_and_start_node() {
     display_header
     echo -e "${YELLOW}Starting node with screen session 'eclipse'...${NC}"
+
+    # Start the screen session and run the node in it
     screen -S eclipse -dm bash -c "bitz collect"
-    echo -e "${GREEN}Node started inside screen session 'eclipse'!${NC}"
-    echo -e "${CYAN}To view logs: screen -r eclipse${NC}"
+
+    # Check if the screen session started successfully
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}Node started inside screen session 'eclipse'!${NC}"
+        echo -e "${CYAN}To view logs: screen -r eclipse${NC}"
+    else
+        echo -e "${RED}Failed to start the node. Please check the installation and try again.${NC}"
+    fi
 }
 
 # Remove node and clean up
@@ -117,7 +124,10 @@ main_menu() {
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
 
         case $choice in
-            1) install_eclipse_node ;;
+            1) 
+                install_dependencies
+                install_eclipse_node
+                ;;
             2) create_screen_and_start_node ;;
             3) remove_eclipse_node ;;
             4) 
@@ -132,9 +142,6 @@ main_menu() {
         read -n 1 -s
     done
 }
-
-# Install dependencies first
-install_dependencies
 
 # Launch menu
 main_menu
