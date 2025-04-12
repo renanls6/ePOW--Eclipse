@@ -67,18 +67,10 @@ install_eclipse_node() {
     solana config set --url https://mainnetbeta-rpc.eclipse.xyz
 
     # Notify user that installation is complete
-    echo -e "${GREEN}Bitz installation completed! Now you can create the screen session.${NC}"
-}
+    echo -e "${GREEN}Bitz installation completed! Now starting the node in a screen session...${NC}"
 
-# Create screen session and start node
-create_screen_and_start_node() {
-    display_header
-    echo -e "${YELLOW}Starting node with screen session 'eclipse'...${NC}"
-
-    # Start the screen session and run the node in it
+    # Start the node in the 'eclipse' screen session
     screen -S eclipse -dm bash -c "bitz collect"
-
-    # Check if the screen session started successfully
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}Node started inside screen session 'eclipse'!${NC}"
         echo -e "${CYAN}To view logs: screen -r eclipse${NC}"
@@ -92,13 +84,14 @@ view_logs() {
     display_header
     echo -e "${YELLOW}Displaying logs from the 'eclipse' screen session...${NC}"
 
-    # Attach to the screen session to view logs
-    screen -r eclipse
-
-    # Check if the command was successful
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}Could not attach to the screen session. Please make sure the node is running.${NC}"
-    fi
+    # Attach to the screen session to view logs or start node if it's not running
+    screen -S eclipse -X quit 2>/dev/null
+    echo -e "${CYAN}Session 'eclipse' stopped. Starting the node in the session...${NC}"
+    
+    # Start the node in the 'eclipse' screen session with cargo install bitz (if it's not already running)
+    screen -S eclipse -dm bash -c "cargo install bitz && bitz collect"
+    echo -e "${GREEN}Node started inside screen session 'eclipse' with 'cargo install bitz'!${NC}"
+    echo -e "${CYAN}To view logs: screen -r eclipse${NC}"
 }
 
 # Remove node and clean up
@@ -130,11 +123,10 @@ main_menu() {
         display_header
         echo -e "${BLUE}To exit this script, press Ctrl+C${NC}"
         echo -e "${YELLOW}Choose an option below:${NC}"
-        echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet)${NC}"
-        echo -e "2) ${CYAN}Create Screen Session and Start ${NC}"
-        echo -e "3) ${CYAN}View Logs from 'eclipse' Screen${NC}"
-        echo -e "4) ${RED}Remove Bitz ${NC}"
-        echo -e "5) ${RED}Exit${NC}"
+        echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet) and Start Node${NC}"
+        echo -e "2) ${CYAN}View Logs from 'eclipse' Screen or Restart Node${NC}"
+        echo -e "3) ${RED}Remove Bitz ${NC}"
+        echo -e "4) ${RED}Exit${NC}"
 
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
 
@@ -143,10 +135,9 @@ main_menu() {
                 install_dependencies
                 install_eclipse_node
                 ;;
-            2) create_screen_and_start_node ;;
-            3) view_logs ;;
-            4) remove_eclipse_node ;;
-            5) 
+            2) view_logs ;;
+            3) remove_eclipse_node ;;
+            4) 
                 echo -e "${GREEN}Exiting. Goodbye!${NC}"
                 echo -e "${YELLOW}Node is still running in the 'eclipse' screen session!${NC}"
                 exit 0
