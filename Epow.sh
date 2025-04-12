@@ -9,7 +9,7 @@ WHITE='\033[1;37m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Display banner
+# Display header
 display_header() {
     clear
     echo -e "${CYAN}"
@@ -47,13 +47,10 @@ install_bitz_cli() {
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     echo -e "${GREEN}Solana CLI installed!${NC}"
 
-    # Cluster choice
+    # Cluster auto-select: mainnet-beta
     echo -e "${BLUE}====================================${NC}"
-    echo -e "${CYAN}🌐 Select the Solana cluster:${NC}"
-    echo -e "1) mainnet-beta"
-    echo -e "2) testnet"
-    echo -e "3) devnet"
-    read -p "$(echo -e "${YELLOW}Enter the corresponding number: ${NC}")" CLUSTER_OPTION
+    echo -e "${CYAN}🌐 Selecting Solana cluster automatically: mainnet-beta (1)...${NC}"
+    CLUSTER_OPTION=1
 
     case $CLUSTER_OPTION in
         1)
@@ -80,8 +77,22 @@ install_bitz_cli() {
     KEYPAIR_PATH="$HOME/.config/solana/id.json"
     SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --no-passphrase --outfile "$KEYPAIR_PATH")
 
-    PUBKEY=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep "pubkey" | awk '{print $2}')
-    SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep "Save this seed phrase" -A 12 | tail -n 12 | tr '\n' ' ')
+    # Extract pubkey and seed phrase directly
+    PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
+    SEED_PHRASE=$(solana-keygen recover --outfile /tmp/recovered-keypair.json "$KEYPAIR_PATH")
+
+    # If the seed phrase was extracted successfully, display it
+    if [[ -f /tmp/recovered-keypair.json ]]; then
+        RECOVERED_SEED=$(cat /tmp/recovered-keypair.json | grep -oP '\"phrase\": \[.*\]' | sed 's/"phrase": \[//g' | sed 's/\]//g' | tr -d '"')
+    fi
+
+
+  echo ""
+    echo -e "${BLUE}====================================${NC}"
+    echo -e "${CYAN}⚙️  Current Solana CLI Configuration${NC}"
+    echo -e "${BLUE}====================================${NC}"
+    solana config get
+    echo -e "${BLUE}====================================${NC}"
 
     echo ""
     echo -e "${GREEN}✅ Wallet successfully created!${NC}"
@@ -91,22 +102,15 @@ install_bitz_cli() {
     echo -e "${YELLOW}📬 Public Key:${NC}"
     echo -e "$PUBKEY"
 
-    echo ""
-    echo -e "${BLUE}====================================${NC}"
-    echo -e "${CYAN}⚙️  Current Solana CLI Configuration${NC}"
-    echo -e "${BLUE}====================================${NC}"
-    solana config get
-    echo -e "${BLUE}====================================${NC}"
+  echo ""
+    echo -e "${YELLOW}📝 Seed Phrase for recovery (store securely):${NC}"
+    echo -e "$RECOVERED_SEED"
 
     echo ""
     echo -e "${RED}⚠️  WARNING: This is your PRIVATE KEY! DO NOT share it!${NC}"
     echo -e "${BLUE}====================================${NC}"
     cat "$KEYPAIR_PATH"
     echo -e "${BLUE}====================================${NC}"
-
-    echo ""
-    echo -e "${YELLOW}📝 Seed Phrase for recovery (store securely):${NC}"
-    echo -e "$SEED_PHRASE"
 
     echo ""
     read -n 1 -s -r -p "$(echo -e "${YELLOW}Press any key to return to the menu...${NC}")"
