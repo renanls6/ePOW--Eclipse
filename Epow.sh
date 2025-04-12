@@ -47,9 +47,9 @@ install_bitz_cli() {
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     echo -e "${GREEN}Solana CLI installed!${NC}"
 
-    # Automatically set the Solana cluster to mainnet-beta
-    echo -e "${CYAN}🌐 Setting Solana CLI cluster to mainnet-beta...${NC}"
-    solana config set --url "https://api.mainnet-beta.solana.com" >/dev/null 2>&1
+    # Automatically set the Solana cluster to Eclipse RPC
+    echo -e "${CYAN}🌐 Setting Solana CLI cluster to Eclipse RPC...${NC}"
+    solana config set --url https://mainnetbeta-rpc.eclipse.xyz >/dev/null 2>&1
 
     # Wallet generation using `solana-keygen new` with --force flag
     display_header
@@ -75,13 +75,13 @@ install_bitz_cli() {
     echo -e "=============================================================================="
     echo -e "${GREEN}pubkey:${NC} ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "${CYAN}Save this seed phrase to recover your new keypair:$"
-    echo -e "${GREEN}${SEED_PHRASE}"
+    echo -e "${CYAN}Seed phrase to recover your new keypair:${NC}"
+    echo -e "${SEED_PHRASE}"
     echo -e "=============================================================================="
     echo -e "${RED}⚠️  This is your private key that will be imported into Backpack. DO NOT share it!${NC}"
     echo -e "${BLUE}====================================${NC}"
     cat "$KEYPAIR_PATH"
-    echo -e "${CYAN}====================================${NC}"
+    echo -e "${CYAN}${NC}"
 
     echo ""
     read -n 1 -s -r -p "$(echo -e "${YELLOW}Press any key to return to the menu...${NC}")"
