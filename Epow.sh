@@ -74,7 +74,7 @@ install_bitz_cli() {
     echo -e "=============================================================================="
     echo -e "${GREEN}pubkey:${NC} ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "${CYAN}Seed phrase to recover your new keypair:${}"
+    echo -e "${CYAN}Seed phrase to recover your new keypair:${NC}"
     echo -e "${SEED_PHRASE}"
     echo -e "=============================================================================="
     echo -e "${RED}⚠️  This is your private key that will be imported into Backpack. DO NOT share it!${NC}"
