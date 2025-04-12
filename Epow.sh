@@ -56,12 +56,16 @@ install_eclipse_node() {
     solana-keygen new --no-passphrase --outfile ~/.config/solana/id.json
     echo -e "${GREEN}Wallet created!${NC}"
 
-    # Set RPC to Eclipse Mainnet automatically
-    echo -e "${YELLOW}Configuring RPC to Eclipse Mainnet automatically...${NC}"
+    # Set RPC to Eclipse Mainnet automatically (no output shown to user)
     solana config set --url https://mainnetbeta-rpc.eclipse.xyz
-    echo -e "${GREEN}RPC set to Eclipse Mainnet automatically!${NC}"
 
-    # Start node with screen
+    # Notify user that installation is complete
+    echo -e "${GREEN}Eclipse Node installation completed! Now you can create the screen session.${NC}"
+}
+
+# Create screen session and start node
+create_screen_and_start_node() {
+    display_header
     echo -e "${YELLOW}Starting node with screen session 'eclipse'...${NC}"
     screen -S eclipse -dm bash -c "bitz collect"
     echo -e "${GREEN}Node started inside screen session 'eclipse'!${NC}"
@@ -75,18 +79,14 @@ main_menu() {
         echo -e "${BLUE}To exit this script, press Ctrl+C${NC}"
         echo -e "${YELLOW}Choose an option below:${NC}"
         echo -e "1) ${GREEN}Install Eclipse Node (Rust + Solana + Wallet + Start Node)${NC}"
-        echo -e "2) ${CYAN}Start Node only (bitz collect in screen)${NC}"
+        echo -e "2) ${CYAN}Create screen session and start node (bitz collect in screen)${NC}"
         echo -e "3) ${RED}Exit${NC}"
 
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
 
         case $choice in
             1) install_eclipse_node ;;
-            2)
-                echo -e "${YELLOW}Starting node...${NC}"
-                screen -S eclipse -dm bash -c "bitz collect"
-                echo -e "${GREEN}Node started in screen session 'eclipse'!${NC}"
-                ;;
+            2) create_screen_and_start_node ;;
             3) echo -e "${GREEN}Exiting. Goodbye!${NC}"; exit 0 ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
