@@ -60,7 +60,7 @@ install_eclipse_node() {
     solana config set --url https://mainnetbeta-rpc.eclipse.xyz
 
     # Notify user that installation is complete
-    echo -e "${GREEN}Eclipse Node installation completed! Now you can create the screen session.${NC}"
+    echo -e "${GREEN}Bitz installation completed! Now you can create the screen session.${NC}"
 }
 
 # Create screen session and start node
