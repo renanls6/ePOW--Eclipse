@@ -107,9 +107,9 @@ main_menu() {
     while true; do
         display_header
         echo -e "${YELLOW}Choose an option below:${NC}"
-        echo -e "1) ${GREEN}Install Bitz  (Rust + Solana + Wallet + Screen)${NC}"
-        echo -e "2) ${CYAN}Prepare Screen ${NC}"
-        echo -e "3) ${MAGENTA}Run Bitz Mining ${NC}"
+        echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet + Screen)${NC}"
+        echo -e "2) ${CYAN}Prepare screen with command: cargo install bitz${NC}"
+        echo -e "3) ${MAGENTA}Run Bitz node (send command to screen)${NC}"
         echo -e "4) ${RED}Remove Bitz setup${NC}"
         echo -e "5) ${BLUE}Exit${NC}"
 
