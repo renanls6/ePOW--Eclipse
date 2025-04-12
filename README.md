@@ -30,14 +30,20 @@ cargo install bitz
 ```
 
 
-
 # 6. Using Bitz
 
-- Fund your wallet with a minimum balance of 0.0005 ETH before hand
+Start eMining
+```bash
+bitz collect
+```
 
-Basic Commands:
-- Collect bitz: "bitz collect"
-- Claim your bitz: "bitz claim"
-- Check your balance: bitz account
-- Look up all commands: bitz -h or bitz --help
+Other Commands:
+
+• Claim your Bitz: bitz claim
+
+• Check your balance: bitz account
+
+• Config CPU (change the number to change cores): bitz collect --cores 8
+
+• View all commands: bitz -h
 
