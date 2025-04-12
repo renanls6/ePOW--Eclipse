@@ -72,22 +72,51 @@ create_screen_and_start_node() {
     echo -e "${CYAN}To view logs: screen -r eclipse${NC}"
 }
 
+# Remove node and clean up
+remove_eclipse_node() {
+    display_header
+    echo -e "${YELLOW}Stopping node inside screen session 'eclipse'...${NC}"
+
+    # Stop the screen session
+    screen -S eclipse -X quit
+    echo -e "${GREEN}Node stopped!${NC}"
+
+    # Optionally, remove wallet and configuration files
+    echo -e "${YELLOW}Removing Solana wallet and configuration files...${NC}"
+    rm -f ~/.config/solana/id.json
+    rm -f ~/.config/solana/config.json
+    echo -e "${GREEN}Wallet and config files removed!${NC}"
+
+    # Optionally, remove Solana and Rust installations (if desired)
+    # echo -e "${YELLOW}Removing Solana CLI and Rust...${NC}"
+    # rm -rf $HOME/.local/share/solana
+    # rm -rf $HOME/.cargo
+    # rm -rf $HOME/.rustup
+    # echo -e "${GREEN}Solana CLI and Rust removed!${NC}"
+}
+
 # Main menu
 main_menu() {
     while true; do
         display_header
         echo -e "${BLUE}To exit this script, press Ctrl+C${NC}"
         echo -e "${YELLOW}Choose an option below:${NC}"
-        echo -e "1) ${GREEN}Install Eclipse Node (Rust + Solana + Wallet + Start Node)${NC}"
-        echo -e "2) ${CYAN}Create screen session and start node (bitz collect in screen)${NC}"
-        echo -e "3) ${RED}Exit${NC}"
+        echo -e "1) ${GREEN}Install Bitz(Rust + Solana + Wallet)${NC}"
+        echo -e "2) ${CYAN}Create Screen  and Start${NC}"
+        echo -e "3) ${RED}Remove Bitz (Stop node and remove files)${NC}"
+        echo -e "4) ${RED}Exit${NC}"
 
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
 
         case $choice in
             1) install_eclipse_node ;;
             2) create_screen_and_start_node ;;
-            3) echo -e "${GREEN}Exiting. Goodbye!${NC}"; exit 0 ;;
+            3) remove_eclipse_node ;;
+            4) 
+                echo -e "${GREEN}Exiting. Goodbye!${NC}"
+                echo -e "${YELLOW}Node is still running in the 'eclipse' screen session!${NC}"
+                exit 0
+                ;;
             *) echo -e "${RED}Invalid option. Please try again.${NC}" ;;
         esac
 
