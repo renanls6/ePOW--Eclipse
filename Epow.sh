@@ -56,15 +56,17 @@ install_bitz_cli() {
     echo -e "${CYAN}🔐 Generating new Solana wallet...${NC}"
 
     KEYPAIR_PATH="$HOME/.config/solana/id.json"
-    solana-keygen new --force --no-passphrase --outfile "$KEYPAIR_PATH"
+    
+    # Generate the new keypair and capture the output
+    SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --force --no-passphrase --outfile "$KEYPAIR_PATH")
 
-    # Show wallet public key
+    # Extract the public key
     PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
 
-    # Extract seed phrase (it should be visible in the output of solana-keygen new)
-    SEED_PHRASE=$(solana-keygen new --no-passphrase --outfile "$KEYPAIR_PATH" | grep "Save this seed phrase" -A 12 | tail -n 12)
+    # Extract the seed phrase (directly from the output)
+    SEED_PHRASE=$(echo "$SOLANA_KEYGEN_OUTPUT" | grep -A 12 "Save this seed phrase" | tail -n 12 | tr '\n' ' ')
 
-    # Show the configuration of Solana CLI
+    # Show wallet information
     echo -e "${YELLOW}Node Config Info:${NC}"
     solana config get
 
