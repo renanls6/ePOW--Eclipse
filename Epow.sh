@@ -20,7 +20,7 @@ display_header() {
     echo -e " ${BLUE}╚██████╔╝██╔╝ ██╗    ██║  ██║███████╗██║ ╚████║██║  ██║██║ ╚████║${NC}"
     echo -e " ${BLUE}╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
     echo -e "${BLUE}=======================================================${NC}"
-    echo -e "${GREEN}       ✨ Bitz Setup Script ⛏️  ✨${NC}"
+    echo -e "${GREEN}       ✨ Solana Wallet Setup ✨${NC}"
     echo -e "${BLUE}=======================================================${NC}"
 }
 
@@ -47,59 +47,33 @@ install_bitz_cli() {
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     echo -e "${GREEN}Solana CLI installed!${NC}"
 
-    # Cluster auto-select: mainnet-beta
-    echo -e "${BLUE}====================================${NC}"
-    echo -e "${CYAN}🌐 Selecting Solana cluster automatically: mainnet-beta (1)...${NC}"
-    CLUSTER_OPTION=1
+    # Automatically set the Solana cluster to mainnet-beta
+    echo -e "${CYAN}🌐 Setting Solana CLI cluster to mainnet-beta...${NC}"
+    solana config set --url "https://api.mainnet-beta.solana.com" >/dev/null 2>&1
 
-    case $CLUSTER_OPTION in
-        1)
-            CLUSTER_URL="https://api.mainnet-beta.solana.com"
-            ;;
-        2)
-            CLUSTER_URL="https://api.testnet.solana.com"
-            ;;
-        3)
-            CLUSTER_URL="https://api.devnet.solana.com"
-            ;;
-        *)
-            echo -e "${RED}❌ Invalid option. Exiting...${NC}"
-            exit 1
-            ;;
-    esac
-
-    solana config set --url "$CLUSTER_URL" >/dev/null 2>&1
-
-    # Wallet generation
+    # Wallet generation using `solana-keygen new`
     display_header
     echo -e "${CYAN}🔐 Generating new Solana wallet...${NC}"
 
     KEYPAIR_PATH="$HOME/.config/solana/id.json"
-    SOLANA_KEYGEN_OUTPUT=$(solana-keygen new --no-passphrase --outfile "$KEYPAIR_PATH")
+    solana-keygen new --no-passphrase --outfile "$KEYPAIR_PATH"
 
-    # Extract pubkey directly
+    # Show wallet public key
     PUBKEY=$(solana-keygen pubkey "$KEYPAIR_PATH")
 
-    # Extract seed phrase
-    SEED_PHRASE=$(solana-keygen recover --outfile /tmp/recovered-keypair.json "$KEYPAIR_PATH")
-    if [[ -f /tmp/recovered-keypair.json ]]; then
-        RECOVERED_SEED=$(cat /tmp/recovered-keypair.json | grep -oP '\"phrase\": \[.*\]' | sed 's/"phrase": \[//g' | sed 's/\]//g' | tr -d '"')
-    fi
+    # Show the configuration of Solana CLI
+    echo -e "${YELLOW}Node Config Info:${NC}"
+    solana config get
 
     # Display information in the desired format
-    echo ""
-    echo -e "${GREEN}✅ Wallet successfully created!${NC}"
-    echo -e "${CYAN}📁 Keypair Path: $KEYPAIR_PATH${NC}"
-
-    echo ""
+    echo -e "${CYAN}"
     echo -e "=============================================================================="
-    echo -e "pubkey: ${PUBKEY}"
+    echo -e "${GREEN}pubkey:${NC} ${PUBKEY}"
     echo -e "=============================================================================="
-    echo -e "Save this seed phrase to recover your new keypair:"
-    echo -e "${RECOVERED_SEED}"
+    echo -e "${YELLOW}Save this seed phrase to recover your new keypair:${NC}"
+    SEED_PHRASE=$(cat "$KEYPAIR_PATH" | jq -r '.seed_phrase')
+    echo -e "${SEED_PHRASE}"
     echo -e "=============================================================================="
-
-    echo ""
     echo -e "${RED}⚠️  WARNING: This is your PRIVATE KEY! DO NOT share it!${NC}"
     echo -e "${BLUE}====================================${NC}"
     cat "$KEYPAIR_PATH"
@@ -128,9 +102,11 @@ main_menu() {
     while true; do
         display_header
         echo -e "${YELLOW}Choose an option:${NC}"
-        echo -e "1) ${WHITE}Install Bitz CLI and Generate Wallet${NC}"
-        echo -e "2) ${WHITE}Reboot VPS${NC}"
-        echo -e "3) ${WHITE}Exit${NC}"
+        echo -e " 1) ${WHITE}Install Solana Wallet${NC}"
+        echo -e " 2) ${WHITE}Reboot VPS${NC}"
+        echo -e " 3) ${WHITE}Exit${NC}"
+        echo -e "${CYAN}====================================${NC}"
+
         read -p "$(echo -e "${CYAN}Enter your choice: ${NC}")" choice
 
         case $choice in
