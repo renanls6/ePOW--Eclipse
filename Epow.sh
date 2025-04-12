@@ -34,7 +34,7 @@ fi
 # Load Rust if already installed
 source $HOME/.cargo/env 2>/dev/null
 
-# Full installation of Bitz CLI and dependencies
+# Full installation
 install_bitz_cli() {
     display_header
     echo -e "${CYAN}Starting full installation for Bitz CLI...${NC}"
@@ -59,37 +59,20 @@ install_bitz_cli() {
 
     solana config set --url https://mainnetbeta-rpc.eclipse.xyz >/dev/null 2>&1
 
-    echo -e "${YELLOW}Creating screen session 'bitz' with command ready...${NC}"
-    screen -S bitz -dm bash -c 'read -p "Press Enter to run: cargo install bitz" && cargo install bitz; exec bash'
-
-    echo -e "${GREEN}Installation completed and screen 'bitz' is ready!${NC}"
-    echo -e "${CYAN}To enter it manually: ${YELLOW}screen -r bitz${NC}"
+    echo -e "${GREEN}Installation complete! You can now start the Bitz node.${NC}"
 }
 
-# Start a screen session with command ready
-start_bitz_screen() {
+# Option 2: Start screen and run cargo install bitz, keep it open
+start_bitz_screen_and_run() {
     display_header
-    echo -e "${CYAN}Creating screen session 'bitz' with cargo install bitz prepared...${NC}"
-    screen -S bitz -dm bash -c 'read -p "Press Enter to run: cargo install bitz" && cargo install bitz; exec bash'
-    echo -e "${GREEN}Screen 'bitz' created successfully!${NC}"
-    echo -e "${CYAN}To access it: ${YELLOW}screen -r bitz${NC}"
+    echo -e "${YELLOW}Creating screen 'bitz' and running 'cargo install bitz' inside it...${NC}"
+    screen -S bitz -dm bash -c 'bash -i -c "cargo install bitz; exec bash"'
+    sleep 1
+    echo -e "${GREEN}Screen 'bitz' started and running 'cargo install bitz'.${NC}"
+    echo -e "${CYAN}You can attach using: ${YELLOW}screen -r bitz${NC}"
 }
 
-# Run Bitz node inside the screen
-run_bitz_in_screen() {
-    display_header
-    echo -e "${YELLOW}Launching screen 'bitz' and running: cargo install bitz...${NC}"
-
-    # Create screen if not exists
-    screen -ls | grep -q "\.bitz" || screen -S bitz -dm bash
-
-    # Send command to the screen
-    screen -S bitz -X stuff "cargo install bitz && exec bash\n"
-
-    echo -e "${GREEN}Command sent to screen. To monitor: screen -r bitz${NC}"
-}
-
-# Remove Bitz CLI and config
+# Remove Bitz
 remove_bitz() {
     display_header
     echo -e "${YELLOW}Stopping screen session 'bitz' if it exists...${NC}"
@@ -102,25 +85,23 @@ remove_bitz() {
     echo -e "${GREEN}Cleanup complete!${NC}"
 }
 
-# Main menu
+# Menu
 main_menu() {
     while true; do
         display_header
         echo -e "${YELLOW}Choose an option below:${NC}"
         echo -e "1) ${GREEN}Install Bitz CLI (Rust + Solana + Wallet + Screen)${NC}"
-        echo -e "2) ${CYAN}Prepare screen with command: cargo install bitz${NC}"
-        echo -e "3) ${MAGENTA}Run Bitz node (send command to screen)${NC}"
-        echo -e "4) ${RED}Remove Bitz setup${NC}"
-        echo -e "5) ${BLUE}Exit${NC}"
+        echo -e "2) ${CYAN}Start screen 'bitz' and run 'cargo install bitz'${NC}"
+        echo -e "3) ${RED}Remove Bitz setup${NC}"
+        echo -e "4) ${BLUE}Exit${NC}"
 
         read -p "$(echo -e "${BLUE}Enter your choice: ${NC}")" choice
 
         case $choice in
             1) install_bitz_cli ;;
-            2) start_bitz_screen ;;
-            3) run_bitz_in_screen ;;
-            4) remove_bitz ;;
-            5)
+            2) start_bitz_screen_and_run ;;
+            3) remove_bitz ;;
+            4)
                 echo -e "${GREEN}Exiting. Goodbye!${NC}"
                 echo -e "${YELLOW}If screen 'bitz' is running, it will stay active in background.${NC}"
                 exit 0
@@ -133,5 +114,5 @@ main_menu() {
     done
 }
 
-# Launch menu
+# Start menu
 main_menu
